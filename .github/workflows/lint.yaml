@@ -1,0 +1,39 @@
+name: Lint
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Fish shell
+        uses: fish-actions/install-fish@v1
+
+      - name: Check Fish syntax
+        run: |
+          for file in functions/*.fish conf.d/*.fish; do
+            echo "Checking $file..."
+            fish -n "$file"
+          done
+
+      - name: Check Fish formatting
+        run: |
+          fail=0
+          for file in functions/*.fish conf.d/*.fish; do
+            if ! diff -u "$file" <(fish_indent < "$file") >/dev/null 2>&1; then
+              echo "$file is not properly formatted:"
+              diff -u "$file" <(fish_indent < "$file") || true
+              fail=1
+            fi
+          done
+          if [ "$fail" -eq 1 ]; then
+            echo ""
+            echo "Run 'make format' to fix formatting issues."
+            exit 1
+          fi
