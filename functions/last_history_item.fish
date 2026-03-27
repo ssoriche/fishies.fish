@@ -1,3 +1,5 @@
 #!/usr/bin/env fish
 
-function last_history_item; echo $history[1]; end
+function last_history_item
+    echo $history[1]
+end
